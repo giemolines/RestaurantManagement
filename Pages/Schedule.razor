@@ -1,0 +1,73 @@
+﻿@page "/schedule"
+@using System.Globalization
+@using RestaurantManagement.Models
+@inject HttpClient HttpClient
+
+<h3>Schedule</h3>
+
+@if (scheduleItems != null && scheduleItems.Any())
+{
+    <table class="table table-bordered mt-4">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Employee</th>
+                <th>Role</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var slot in scheduleItems)
+            {
+                <tr>
+                    <td>@slot.Date.ToShortDateString()</td>
+                    <td>@slot.Time</td>
+                    <td>@slot.Employee</td>
+                    <td>@slot.Role</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No schedule items found.</p>
+}
+
+@code {
+    List<ScheduleItem> scheduleItems;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var csvData = await HttpClient.GetStringAsync("RestaurantManagement/Databases/restoDB.csv");
+        scheduleItems = ParseCsvData(csvData);
+    }
+
+    private List<ScheduleItem> ParseCsvData(string csvData)
+    {
+        var lines = csvData.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+        var items = new List<ScheduleItem>();
+
+        foreach (var line in lines.Skip(1)) // Skip header row
+        {
+            var values = line.Split(',');
+
+            if (values.Length >= 4 &&
+                DateTime.TryParseExact(values[6], "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime date) &&
+                TimeSpan.TryParseExact(values[7], @"hh\:mm tt", CultureInfo.InvariantCulture, out TimeSpan time))
+            {
+                var scheduleItem = new ScheduleItem
+                {
+                    Date = date,
+                    Time = values[7],
+                    Employee = values[3],
+                    Role = values[2]
+                };
+
+                items.Add(scheduleItem);
+            }
+        }
+
+        return items;
+    }
+}

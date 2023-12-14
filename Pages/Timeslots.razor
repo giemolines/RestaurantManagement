@@ -1,0 +1,82 @@
+﻿@page "/timeslots"
+
+@using CsvHelper
+@using System.Globalization
+@using System.IO
+
+<h3>Time Slots</h3>
+
+@code {
+    public class TimeSlot
+    {
+        public DateTime Date { get; set; }
+        public string ClockIn { get; set; }
+        public string ClockOut { get; set; }
+        public string Employee { get; set; }
+    }
+
+    List<TimeSlot> ReadTimeSlotsFromCSV(string filePath)
+    {
+        List<TimeSlot> timeSlots = new List<TimeSlot>();
+
+        using (var reader = new StreamReader(filePath))
+        using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+        {
+            csv.Configuration.HasHeaderRecord = true;
+            var records = csv.GetRecords<TimeSlot>();
+            timeSlots.AddRange(records);
+        }
+
+        return timeSlots;
+    }
+
+    List<TimeSlot> GetTimeSlotsForEmployee(string employeeName, List<TimeSlot> allTimeSlots)
+    {
+        return allTimeSlots.Where(slot => slot.Employee == employeeName).ToList();
+    }
+
+    string filePath = "RestaurantManagement/Databases/restoDB.csv"; 
+    List<TimeSlot> allTimeSlots = ReadTimeSlotsFromCSV(filePath);
+}
+
+<div class="row">
+    @foreach (var employeeName in new[] { "Bob Belcher", "Linda Belcher", "Louise Belcher" })
+    {
+        var timeSlots = GetTimeSlotsForEmployee(employeeName, allTimeSlots);
+        <div class="col-md-4" style="margin-bottom: 20px;">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">@employeeName</h5>
+                    @if (timeSlots != null && timeSlots.Any())
+                    {
+                        <table class="table table-bordered mt-4">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Clock In</th>
+                                    <th>Clock Out</th>
+                                    <th>Employee</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var slot in timeSlots)
+                                {
+                                    <tr>
+                                        <td>@slot.Date.ToShortDateString()</td>
+                                        <td>@slot.ClockIn</td>
+                                        <td>@slot.ClockOut</td>
+                                        <td>@slot.Employee</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <p>No time slots available for @employeeName.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>

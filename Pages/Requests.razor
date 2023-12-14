@@ -1,0 +1,59 @@
+﻿@page "/request"
+@using RestaurantManagement.Models
+@inject RestaurantManagement.Data.RequestService requestService
+@inject RestaurantManagement.Data.ScheduleService scheduleService
+
+<h3>Request Schedule Change</h3>
+
+<div class="form-group">
+    <label for="requestType">Request Type</label>
+    <select id="requestType" @bind="newRequest.RequestType" class="form-control">
+        <option value="DayOff">Day Off</option>
+        <option value="NewSchedule">New Schedule</option>
+    </select>
+</div>
+
+@if (newRequest.RequestType == "NewSchedule")
+{
+    <div class="form-group">
+        <label for="selectedDate">Select Date</label>
+        <select id="selectedDate" @bind="newRequest.SelectedDate" class="form-control">
+            @foreach (var date in scheduleService.GetUniqueDates())
+            {
+                <option value="@date">@date.ToShortDateString()</option>
+            }
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="selectedShift">Select Shift</label>
+        <select id="selectedShift" @bind="newRequest.SelectedShift" class="form-control">
+            @foreach (var shift in scheduleService.GetShiftsForDate(newRequest.SelectedDate))
+            {
+                <option value="@shift">@shift</option>
+            }
+        </select>
+    </div>
+}
+
+<div class="d-flex justify-content-center mt-3">
+    <button @onclick="SubmitRequest" class="btn btn-primary px-4">Submit Request</button>
+</div>
+
+@if (isRequestSubmitted)
+{
+    <div class="alert alert-success mt-3" role="alert">
+        Request submitted successfully!
+    </div>
+}
+
+@code {
+    private ScheduleChangeRequestModel newRequest = new ScheduleChangeRequestModel();
+    private bool isRequestSubmitted = false;
+
+    private async Task SubmitRequest()
+    {
+        await requestService.SubmitScheduleChangeRequest(newRequest);
+        isRequestSubmitted = true;
+    }
+}

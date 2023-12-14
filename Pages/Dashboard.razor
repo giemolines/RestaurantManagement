@@ -1,0 +1,33 @@
+﻿@page "/dashboard"
+@inject NavigationManager NavigationManager
+
+<h3>Welcome to the Dashboard</h3>
+
+<div class="mt-4">
+    <button @onclick="ViewSchedule" class="btn btn-primary mr-3">View Schedule</button>
+    <button @onclick="ViewTimeSlots" class="btn btn-success mr-3">View Time Slots</button>
+    <button @onclick="RequestDaysOff" class="btn btn-warning">Request Days Off</button>
+</div>
+
+@code {
+    private void ViewSchedule()
+    {
+        // Logic to navigate or display schedule
+        NavigationManager.NavigateTo("/schedule");
+        Console.WriteLine("View Schedule button clicked");
+    }
+
+    private void ViewTimeSlots()
+    {
+        // Logic to navigate or display time slots
+        NavigationManager.NavigateTo("/timeslots");
+        Console.WriteLine("View Time Slots button clicked");
+    }
+
+    private void RequestDaysOff()
+    {
+        // Logic to navigate or perform action for requesting days off
+        NavigationManager.NavigateTo("/requests");
+        Console.WriteLine("Request Days Off button clicked");
+    }
+}
